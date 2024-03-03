@@ -73,16 +73,15 @@ def rename(old_name, new_name):
 def create_key(Hkey, sub_key):
     try:
         if Hkey == "HKEY_CLASSES_ROOT":
-            key = winreg.CreateKeyEx(winreg.HKEY_CLASSES_ROOT, sub_key, 0, winreg.KEY_ALL_ACCESS)
+            winreg.CreateKeyEx(winreg.HKEY_CLASSES_ROOT, sub_key, 0, winreg.KEY_ALL_ACCESS)
         elif Hkey == "HKEY_CURRENT_USER":
-            key = winreg.CreateKeyEx(winreg.HKEY_CURRENT_USER, sub_key, 0, winreg.KEY_ALL_ACCESS)
+            winreg.CreateKeyEx(winreg.HKEY_CURRENT_USER, sub_key, 0, winreg.KEY_ALL_ACCESS)
         elif Hkey == "HKEY_LOCAL_MACHINE":
-            software = winreg.OpenKeyEx(winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\\", 0, winreg.KEY_ALL_ACCESS)
-            key = winreg.CreateKeyEx(software, sub_key, 0, winreg.KEY_ALL_ACCESS)
+            winreg.CreateKeyEx(winreg.HKEY_LOCAL_MACHINE, sub_key, 0, winreg.KEY_ALL_ACCESS)
         elif Hkey == "HKEY_USERS":
-            key = winreg.CreateKeyEx(winreg.HKEY_USERS, sub_key, 0, winreg.KEY_ALL_ACCESS)
+            winreg.CreateKeyEx(winreg.HKEY_USERS, sub_key, 0, winreg.KEY_ALL_ACCESS)
         elif Hkey == "HKEY_CURRENT_CONFIG":
-            key = winreg.CreateKeyEx(winreg.HKEY_CURRENT_CONFIG, sub_key, 0, winreg.KEY_ALL_ACCESS)
+            winreg.CreateKeyEx(winreg.HKEY_CURRENT_CONFIG, sub_key, 0, winreg.KEY_ALL_ACCESS)
         print("The key has been created")
     except PermissionError:
         print("Access error. Administrator rights are required to create a registry key.")
@@ -94,31 +93,20 @@ def create_key(Hkey, sub_key):
 def remove_key(Hkey, sub_key):
     try:
         if Hkey == "HKEY_CLASSES_ROOT":
-            key = winreg.OpenKeyEx(winreg.HKEY_CLASSES_ROOT, sub_key, 0, winreg.KEY_ALL_ACCESS)
+            winreg.DeleteKey(winreg.HKEY_CLASSES_ROOT, sub_key)
         elif Hkey == "HKEY_CURRENT_USER":
-            key = winreg.OpenKeyEx(winreg.HKEY_CURRENT_USER, sub_key, 0, winreg.KEY_ALL_ACCESS)
+            winreg.DeleteKey(winreg.HKEY_CURRENT_USER, sub_key)
         elif Hkey == "HKEY_LOCAL_MACHINE":
-            software = winreg.OpenKeyEx(winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\\", 0, winreg.KEY_ALL_ACCESS)
-            key = winreg.OpenKeyEx(software, sub_key, 0, winreg.KEY_ALL_ACCESS)
+            winreg.DeleteKey(winreg.HKEY_LOCAL_MACHINE, sub_key)
         elif Hkey == "HKEY_USERS":
-            key = winreg.OpenKeyEx(winreg.HKEY_USERS, sub_key, 0, winreg.KEY_ALL_ACCESS)
+            winreg.DeleteKey(winreg.HKEY_USERS, sub_key)
         elif Hkey == "HKEY_CURRENT_CONFIG":
-            key = winreg.OpenKeyEx(winreg.HKEY_CURRENT_CONFIG, sub_key, 0, winreg.KEY_ALL_ACCESS)
+            winreg.DeleteKey(winreg.HKEY_CURRENT_CONFIG, sub_key)
+        print("The key removed successfully")
     except FileNotFoundError:
         print("The key was not found")
-        return
-    winreg.CloseKey(key)
-    if Hkey == "HKEY_CLASSES_ROOTT":
-        winreg.DeleteKey(winreg.HKEY_CLASSES_ROOT, sub_key)
-    if Hkey == "HKEY_CURRENT_USER":
-        winreg.DeleteKey(winreg.HKEY_CURRENT_USER, sub_key)
-    if Hkey == "HKEY_LOCAL_MACHINE":
-        winreg.DeleteKey(software, sub_key)
-    if Hkey == "HKEY_USERS":
-        winreg.DeleteKey(winreg.HKEY_USERS, sub_key)
-    if Hkey == "HKEY_CURRENT_CONFIG":
-        winreg.DeleteKey(winreg.HKEY_CURRENT_CONFIG, sub_key)
-    print("The key removed successfully")
+    except Exception as e:
+        print(f"An error occurred while creating the key: {e}")
 
 
 ########## WRITE TO KEY #########################
@@ -126,21 +114,22 @@ def write_value_to_key(Hkey, sub_key, name, value):
     try:
         if Hkey == "HKEY_CLASSES_ROOT":
             key = winreg.OpenKeyEx(winreg.HKEY_CLASSES_ROOT, sub_key, 0, winreg.KEY_ALL_ACCESS)
-        if Hkey == "HKEY_CURRENT_USER":
+        elif Hkey == "HKEY_CURRENT_USER":
             key = winreg.OpenKeyEx(winreg.HKEY_CURRENT_USER, sub_key, 0, winreg.KEY_ALL_ACCESS)
-        if Hkey == "HKEY_LOCAL_MACHINE":
-            software = winreg.OpenKeyEx(winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\\", 0, winreg.KEY_ALL_ACCESS)
-            key = winreg.OpenKeyEx(software, sub_key, 0, winreg.KEY_ALL_ACCESS)
-        if Hkey == "HKEY_USERS":
+        elif Hkey == "HKEY_LOCAL_MACHINE":
+            key = winreg.OpenKeyEx(winreg.HKEY_LOCAL_MACHINE, sub_key, 0, winreg.KEY_ALL_ACCESS)
+        elif Hkey == "HKEY_USERS":
             key = winreg.OpenKeyEx(winreg.HKEY_USERS, sub_key, 0, winreg.KEY_ALL_ACCESS)
-        if Hkey == "HKEY_CURRENT_CONFIG":
+        elif Hkey == "HKEY_CURRENT_CONFIG":
             key = winreg.OpenKeyEx(winreg.HKEY_CURRENT_CONFIG, sub_key, 0, winreg.KEY_ALL_ACCESS)
+
+        winreg.SetValueEx(key, name, 0, winreg.REG_SZ, value)
+        use_value = winreg.QueryValueEx(key, name)
+        print("A value has been added to the key:", use_value)
     except FileNotFoundError:
         print("The key was not found")
-        return
-    winreg.SetValueEx(key, name, 0, winreg.REG_SZ, value)
-    use_value = winreg.QueryValueEx(key, name)
-    print("A value has been added to the key:", use_value)
+    except Exception as e:
+        print(f"An error occurred while creating the key: {e}")
 
 
 ########### PARSE #################
@@ -155,7 +144,7 @@ def parse():
     command_line.add_argument("--rename", metavar=("OLD", "NEW"), help="Rename a file", nargs=2, type=str)
     command_line.add_argument("--createKey", metavar=("KEY", "SUB_KEY"), help="Create a new SUB_KEY in KEY", nargs=2, type=str)
     command_line.add_argument("--removeKey", metavar=("KEY", "SUB_KEY"), help="Remove a key", nargs=2, type=str)
-    command_line.add_argument("--writeToKey", metavar=("KEY", "SUB_KEY", "NAME", "VALUE"),help="Write value to key", nargs=4, type=str)
+    command_line.add_argument("--writeToKey", metavar=("KEY", "SUB_KEY", "NAME", "VALUE"), help="Write value to key", nargs=4, type=str)
 
     return command_line.parse_args()
 
